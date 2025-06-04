@@ -1,0 +1,33 @@
+{
+  "name": "hsk-image-proxy-service",
+  "version": "1.0.0",
+  "description": "HTTP Proxy for TCP-based Image Service - HSK Flashcard Application",
+  "main": "image-proxy-server.js",
+  "scripts": {
+    "start": "node image-proxy-server.js",
+    "dev": "nodemon image-proxy-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hsk",
+    "flashcards",
+    "images",
+    "proxy",
+    "microservice",
+    "chinese",
+    "learning",
+    "unsplash"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
