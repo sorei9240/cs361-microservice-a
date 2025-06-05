@@ -26,7 +26,7 @@ const imageCache = new Map();
 const MAX_CACHE_SIZE = 200;
 
 // Ensure images directory exists
-const IMAGES_DIR = path.join(__dirname, 'images');
+const IMAGES_DIR = './images'
 async function ensureImagesDir() {
   try {
     await fs.mkdir(IMAGES_DIR, { recursive: true });

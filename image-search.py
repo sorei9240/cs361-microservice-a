@@ -1,11 +1,10 @@
 import requests
-#import os
 from dotenv import load_dotenv
 import socket
 
 load_dotenv()
 
-API_KEY = "Hgz2jg17T4TJ3oq5iODoH_ENwVhQj9p3lM6tvzO9LXg" #os.getenv('UNSPLASH_API_KEY')
+API_KEY = "Hgz2jg17T4TJ3oq5iODoH_ENwVhQj9p3lM6tvzO9LXg"
 BASE_URL = "https://api.unsplash.com"
 HEADERS = {'Authorization': f'Client-ID {API_KEY}'}
 print("key:", API_KEY)
@@ -13,7 +12,7 @@ print("key:", API_KEY)
 my_socket = socket.socket()
 host = socket.gethostname()
 my_port = 1249
-my_socket.bind((host,my_port))
+my_socket.bind((host, my_port))
 my_socket.listen()
 
 def search_images(query, num_images=10):
@@ -23,37 +22,47 @@ def search_images(query, num_images=10):
     response.raise_for_status()
     return response.json()['results']
 
-def download_image(image_url, filename):
+def get_image_data(image_url):
+    """Download image data and return as bytes (don't save to file)"""
     response = requests.get(image_url, stream=True)
     response.raise_for_status()
-    with open(filename, 'wb') as file:
-        for chunk in response.iter_content(8192):
-            file.write(chunk)
-    print(f"Downloaded: {filename}")
+    
+    image_data = b''
+    for chunk in response.iter_content(8192):
+        image_data += chunk
+    
+    print(f"Downloaded image data: {len(image_data)} bytes")
+    return image_data
 
-#if __name__ == "__main__":
 while True:
-    print("start")
+    print("Waiting for connection...")
     my_connection, addr_main = my_socket.accept()
     print("Connection accepted from " + repr(addr_main[1]))
     
-    search_term = my_connection.recv(10240).decode('utf-8')
-    print (search_term)
-    
-    results = search_images(search_term)
+    try:
+        search_term = my_connection.recv(10240).decode('utf-8')
+        print(f"Search term: {search_term}")
+        
+        results = search_images(search_term)
 
-    if results:
-        for i, image in enumerate(results):
+        if results:
+            # Get the first image
+            image = results[0]
             image_url = image['urls']['regular']
-            print("URL:",image_url)
-            filename = f"{search_term.replace(' ', '_')}_{i+1}.jpg"
-            download_image(image_url, filename)
-            with open(filename, 'rb') as f:
-                image_data = f.read()
-                my_connection.sendall(image_data)
-                print("image sent")
-                my_connection.close()
-            break
-    else:
-        print("ERROR: No images found for the given query.")
-    
+            print("URL:", image_url)
+            
+            # Download image data (don't save to file)
+            image_data = get_image_data(image_url)
+            
+            # Send image data over TCP connection
+            my_connection.sendall(image_data)
+            print("Image data sent successfully")
+            
+        else:
+            print("ERROR: No images found for the given query.")
+            
+    except Exception as e:
+        print(f"Error processing request: {e}")
+    finally:
+        my_connection.close()
+        print("Connection closed")
